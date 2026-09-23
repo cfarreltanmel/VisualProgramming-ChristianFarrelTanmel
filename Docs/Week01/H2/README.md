@@ -1,0 +1,1 @@
+Center is not a property of Text. because flutter follows SRP (Single Responsibility Principle). Center single purpose is to handle the layouting of the children inside their parent. Text single purpose is to handle the rendering and font of the text written in the code
