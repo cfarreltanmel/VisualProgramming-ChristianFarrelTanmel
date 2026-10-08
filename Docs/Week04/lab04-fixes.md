@@ -1,0 +1,18 @@
+Fix log
+
+| Widget | Error / symptom | Rule broken | Fix |
+| StoreHeader | Horizontal overflow on smaller screens / landscape | Rule 1 & Rule 2: Hardcoded/unconstrained horizontal layout without long text strategy | Wrapped text Column in Expanded and added maxLines: 1 + TextOverflow.ellipsis to text fields |
+| CategoryBar | Horizontal overflow when categories exceed screen width | Rule 1: Hardcoded fixed row layout without flexible scrolling relationship | Replaced rigid Row padding with SingleChildScrollView (scrollDirection: Axis.horizontal) |
+| PromoStrip | Horizontal overflow across screen orientations | Rule 1: Fixed width row layout without flexible horizontal relationship | Wrapped items inside SingleChildScrollView (scrollDirection: Axis.horizontal) with fixed card widths |
+| PromoCard | Vertical overflow by 282px when item name has long text | Rule 2: Unconstrained text in fixed height container causing text collision | Replaced Spacer() with Expanded on item name text and set maxLines: 2 + TextOverflow.ellipsis |
+| MenuTile | Horizontal overflow on the right edge of narrow screens | Rule 2: Row gave title Text unbounded width with Spacer() | Wrapped title Column in Expanded and added maxLines: 1 + TextOverflow.ellipsis |
+| MenuCard | Vertical overflow when rendering inside grid cells in landscape | Rule 1 & Rule 2: Unbounded image container height and long text without overflow strategy | Wrapped icon container in Expanded and added maxLines: 1 + TextOverflow.ellipsis to title and button text |
+| CartBar | Horizontal overflow by 96px on narrow screen widths | Rule 2: Text widget allowed to expand beyond remaining row space | Wrapped order status Text in Expanded with maxLines: 1 + TextOverflow.ellipsis |
+| MenuScreen | Vertical bottom overflow by 168px in landscape orientation | Rule 1 & Rule 3: Outer Column exceeded height; non-sliver scrollable list | Replaced outer Column with CustomScrollView and wrapped static headers in SliverToBoxAdapter |
+| MenuScreen | Crash RangeError (index): Invalid value: Not in range 0..0: 0 when zero promo items exist | Rule 5 & Rule 7: Accessing non-existent array index on empty list | Added if (promos.length >= 2) guard check before rendering PromoStrip |
+| MenuScreen | Hardcoded MediaQuery width check for tablet layout decision | Rule 4: Tablet layout was not chosen using LayoutBuilder | Wrapped body in LayoutBuilder checking constraints.maxWidth >= 600 |
+| MenuScreen | Empty list showed blank space instead of required state | Rule 5: Missing zero items state widget | Rendered SliverFillRemaining with key: const Key('empty-state'), icon, message, and reset action |
+| MenuScreen | Camera notch and status bar overlapped main UI elements in landscape mode | Rule 1: Content rendered behind hardware display cutouts | Wrapped the LayoutBuilder body inside a SafeArea widget |
+| CartBar | Shopping bag icon clipped by screen notch in landscape mode | Rule 1: Fixed container layout extended under physical screen cutouts | Wrapped inner Row in SafeArea(top: false, bottom: false) to inject dynamic safe horizontal insets |
+| StoreHeader | A RenderFlex overflowed by 54 pixels on the right at 320 dp | Rule 2: Long rating text lacked an overflow strategy inside Row | Wrapped rating Text in Flexible with maxLines: 1 + TextOverflow.ellipsis |
+| CartBar & MenuScreen | Failed bonus test Bonus · notch and gesture bar due to simulated inset overlap | Rule 1: Interactive elements extended into device notch/gesture bar safety bounds | Wrapped Scaffold.body and CartBar content in SafeArea to respect system view paddings |
