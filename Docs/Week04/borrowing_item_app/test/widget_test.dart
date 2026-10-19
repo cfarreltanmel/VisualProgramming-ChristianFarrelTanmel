@@ -5,25 +5,32 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:borrowing_item_app/features/borrowed_items/presentation/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:borrowing_item_app/features/borrowed_items/presentation/home_screen.dart';
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const HomeScreen());
+  testWidgets('HomeScreen loads title and floating action buttons', (
+    WidgetTester tester,
+  ) async {
+    // 1. Build our app UI inside the test environment
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(
+          currentThemeMode: ThemeMode.system,
+          onThemeModeChanged: (mode) {},
+        ),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 2. Verify that the AppBar title is displayed
+    expect(find.text('Borrowed Items'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 3. Verify that the 'Add Item' action button is present
+    expect(find.text('Add Item'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 4. Verify that the theme palette icon exists
+    expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
   });
 }

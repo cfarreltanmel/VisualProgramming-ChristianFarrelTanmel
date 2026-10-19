@@ -6,15 +6,29 @@ void main() {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  // Store the active theme mode state
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _updateThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Borrowed Items App',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system, // Respects device system theme setting
+      themeMode: _themeMode,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -29,7 +43,10 @@ class MainApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(
+        currentThemeMode: _themeMode,
+        onThemeModeChanged: _updateThemeMode,
+      ),
     );
   }
 }

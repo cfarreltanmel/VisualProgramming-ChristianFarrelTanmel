@@ -20,92 +20,111 @@ class SummaryCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Card(
-              elevation: 0,
-              color: colorScheme.primaryContainer,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(16),
-                  right: Radius.circular(4),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Card(
+                elevation: 0,
+                color: colorScheme.primaryContainer,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.horizontal(
+                    left: Radius.circular(16),
+                    right: Radius.circular(4),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  children: [
-                    Text(
-                      '$activeCount',
-                      style: textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onPrimaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$activeCount',
+                          style: textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total Items',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Total Items',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 40,
-            child: VerticalDivider(
-              width: 8,
-              thickness: 1.5,
-              color: colorScheme.outlineVariant,
-            ),
-          ),
-          Expanded(
-            child: Card(
-              elevation: 0,
-              color: hasOverdue
-                  ? colorScheme.errorContainer
-                  : colorScheme.surfaceContainerHigh,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(4),
-                  right: Radius.circular(16),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  children: [
-                    Text(
-                      '$overdueCount',
-                      style: textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: hasOverdue
-                            ? colorScheme.onErrorContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Overdue Items',
-                      style: textTheme.labelLarge?.copyWith(
-                        fontWeight: hasOverdue
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: hasOverdue
-                            ? colorScheme.onErrorContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            SizedBox(
+              height: 40,
+              child: Center(
+                child: VerticalDivider(
+                  width: 8,
+                  thickness: 1.5,
+                  color: colorScheme.outlineVariant,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Card(
+                elevation: 0,
+                color: hasOverdue
+                    ? colorScheme.errorContainer
+                    : colorScheme.surfaceContainerHigh,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.horizontal(
+                    left: Radius.circular(4),
+                    right: Radius.circular(16),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$overdueCount',
+                          style: textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: hasOverdue
+                                ? colorScheme.onErrorContainer
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Overdue Items',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.labelLarge?.copyWith(
+                          fontWeight: hasOverdue
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: hasOverdue
+                              ? colorScheme.onErrorContainer
+                              : colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

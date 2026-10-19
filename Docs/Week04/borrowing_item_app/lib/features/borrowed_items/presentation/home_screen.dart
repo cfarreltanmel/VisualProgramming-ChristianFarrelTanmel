@@ -1,24 +1,33 @@
 import 'package:flutter/material.dart';
 
 import '../domain/borrowed_items.dart';
-import 'widgets/summary_card.dart';
-import 'widgets/item_search_bar.dart';
 import 'widgets/borrowed_items_card.dart';
 import 'widgets/empty_items_view.dart';
+import 'widgets/home_fab_stack.dart';
+import 'widgets/item_search_bar.dart';
+import 'widgets/summary_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<BorrowedItem>? initialItems;
+  final ThemeMode currentThemeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
 
-  const HomeScreen({super.key, this.initialItems});
+  const HomeScreen({
+    super.key,
+    this.initialItems,
+    required this.currentThemeMode,
+    required this.onThemeModeChanged,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  final _searchController = TextEditingController();
   String _searchQuery = '';
   late List<BorrowedItem> _items;
+  bool _isDeleteMode = false;
 
   @override
   void initState() {
@@ -49,98 +58,114 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _toggleItemReturned(String id) {
-    setState(() {
-      final index = _items.indexWhere((item) => item.id == id);
-      if (index != -1) {
-        _items[index] = _items[index].copyWith(
-          isReturned: !_items[index].isReturned,
-        );
-      }
-    });
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _searchQuery = '');
+  }
+
+  void _showDeleteDialog(BorrowedItem item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Borrowed Item?'),
+        content: Text('Delete "${item.itemName}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () {
+              setState(() => _items.removeWhere((i) => i.id == item.id));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredItems = _items.where((item) {
-      final query = _searchQuery.toLowerCase();
-      return item.itemName.toLowerCase().contains(query) ||
-          item.lenderName.toLowerCase().contains(query);
+    final cs = Theme.of(context).colorScheme;
+    final filtered = _items.where((i) {
+      final q = _searchQuery.toLowerCase();
+      return i.itemName.toLowerCase().contains(q) ||
+          i.lenderName.toLowerCase().contains(q);
     }).toList();
 
-    final activeCount = _items.where((i) => !i.isReturned).length;
-    final overdueCount = _items
-        .where((i) => !i.isReturned && i.itemDueDate.isBefore(DateTime.now()))
-        .length;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Borrowed Items')),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isTablet = constraints.maxWidth >= 600;
-
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isTablet ? 800 : double.infinity,
-                    ),
-                    child: Column(
-                      children: [
-                        SummaryCard(
-                          activeCount: activeCount,
-                          overdueCount: overdueCount,
-                        ),
-                        ItemSearchBar(
-                          controller: _searchController,
-                          query: _searchQuery,
-                          onChanged: (val) =>
-                              setState(() => _searchQuery = val),
-                          onClear: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        ),
-                      ],
-                    ),
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        title: Text(_isDeleteMode ? 'Delete Items' : 'Borrowed Items'),
+        backgroundColor: _isDeleteMode ? cs.errorContainer : null,
+      ),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  SummaryCard(
+                    activeCount: _items.where((i) => !i.isReturned).length,
+                    overdueCount: _items
+                        .where(
+                          (i) =>
+                              !i.isReturned &&
+                              i.itemDueDate.isBefore(DateTime.now()),
+                        )
+                        .length,
                   ),
-                ),
+                  ItemSearchBar(
+                    controller: _searchController,
+                    query: _searchQuery,
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    onClear: _clearSearch,
+                  ),
+                ],
               ),
-              if (filteredItems.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: EmptyItemsView(
-                    searchQuery: _searchQuery,
-                    onClearSearch: () {
-                      _searchController.clear();
-                      setState(() => _searchQuery = '');
-                    },
-                  ),
-                )
-              else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final item = filteredItems[index];
-                    return Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: isTablet ? 800 : double.infinity,
-                        ),
-                        child: BorrowedItemCard(
-                          item: item,
-                          onToggleReturned: () => _toggleItemReturned(item.id),
-                        ),
-                      ),
-                    );
-                  }, childCount: filteredItems.length),
+            ),
+            if (filtered.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyItemsView(
+                  searchQuery: _searchQuery,
+                  onClearSearch: _clearSearch,
                 ),
-            ],
-          );
-        },
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = filtered[index];
+                  return BorrowedItemCard(
+                    item: item,
+                    isDeleteMode: _isDeleteMode,
+                    onToggleReturned: () => setState(() {
+                      final i = _items.indexWhere((it) => it.id == item.id);
+                      if (i != -1) {
+                        _items[i] = _items[i].copyWith(
+                          isReturned: !_items[i].isReturned,
+                        );
+                      }
+                    }),
+                    onDelete: () => _showDeleteDialog(item),
+                  );
+                }, childCount: filtered.length),
+              ),
+          ],
+        ),
+      ),
+      floatingActionButton: HomeFabStack(
+        currentThemeMode: widget.currentThemeMode,
+        onThemeModeChanged: widget.onThemeModeChanged,
+        isDeleteMode: _isDeleteMode,
+        onToggleDeleteMode: () =>
+            setState(() => _isDeleteMode = !_isDeleteMode),
+        onItemAdded: (item) => setState(() => _items.add(item)),
       ),
     );
   }
