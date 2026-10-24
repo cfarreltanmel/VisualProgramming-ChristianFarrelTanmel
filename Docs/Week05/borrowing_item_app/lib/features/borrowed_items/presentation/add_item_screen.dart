@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/borrowed_items.dart';
+import 'widgets/add_item_form_card.dart';
 
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
@@ -11,170 +12,66 @@ class AddItemScreen extends StatefulWidget {
 
 class _AddItemScreenState extends State<AddItemScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _itemNameController = TextEditingController();
-  final _lenderNameController = TextEditingController();
-  DateTime? _selectedDate;
+  final _itemController = TextEditingController();
+  final _lenderController = TextEditingController();
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
 
   @override
   void dispose() {
-    _itemNameController.dispose();
-    _lenderNameController.dispose();
+    _itemController.dispose();
+    _lenderController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDueDate() async {
-    final now = DateTime.now();
-    final pickedDate = await showDatePicker(
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
       context: context,
-      initialDate: now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 5),
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
     );
-
-    if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
     }
   }
 
-  void _submitForm() {
+  void _submit() {
     if (_formKey.currentState!.validate()) {
-      if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a due date')),
-        );
-        return;
-      }
-
       final newItem = BorrowedItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        itemName: _itemNameController.text.trim(),
-        lenderName: _lenderNameController.text.trim(),
-        itemDueDate: _selectedDate!,
+        itemName: _itemController.text.trim(),
+        lenderName: _lenderController.text.trim(),
+        itemDueDate: _selectedDate,
+        isReturned: false,
       );
-
-      Navigator.of(context).pop(newItem);
+      Navigator.pop(context, newItem);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Item'), centerTitle: true),
+      appBar: AppBar(title: const Text('Add Borrowed Item')),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Item Details',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
+                AddItemFormCard(
+                  itemController: _itemController,
+                  lenderController: _lenderController,
+                  selectedDate: _selectedDate,
+                  datePicker: _pickDate,
                 ),
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _itemNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Item Name',
-                    hintText: 'e.g., Wireless Controller, Textbook',
-                    prefixIcon: Icon(Icons.inventory_2_outlined),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter the item name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _lenderNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Lender\'s Name',
-                    hintText: 'e.g., Jovian, Sarah',
-                    prefixIcon: Icon(Icons.person_outline),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter the lender\'s name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                Card(
-                  elevation: 0,
-                  color: colorScheme.surfaceContainerHigh,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Due Date',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              Text(
-                                _selectedDate == null
-                                    ? 'No date selected'
-                                    : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: _pickDueDate,
-                          child: Text(
-                            _selectedDate == null ? 'Select' : 'Change',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
+                const SizedBox(height: 24),
                 FilledButton.icon(
-                  onPressed: _submitForm,
-                  icon: const Icon(Icons.check),
+                  onPressed: _submit,
+                  icon: const Icon(Icons.save_outlined),
                   label: const Text('Save Item'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                 ),
               ],
             ),

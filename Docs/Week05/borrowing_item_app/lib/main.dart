@@ -14,7 +14,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  // Store the active theme mode state
   ThemeMode _themeMode = ThemeMode.system;
 
   void _updateThemeMode(ThemeMode mode) {
